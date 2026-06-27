@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Artikel-Quiz – der, die, das</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rot: #E63950;
+    --rot-dunkel: #B82340;
+    --blau: #2E6FE6;
+    --blau-dunkel: #1E52B8;
+    --gruen: #3CB371;
+    --gruen-dunkel: #2C8C57;
+    --tinte: #1A1A2E;
+    --creme: #FFF8F0;
+    --gelb: #FFC93C;
+    --weiss: #FFFFFF;
+    --schatten: rgba(26,26,46,0.25);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--creme);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255,201,60,0.25) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(46,111,230,0.12) 0%, transparent 45%),
+      radial-gradient(circle at 80% 15%, rgba(230,57,80,0.10) 0%, transparent 40%);
+    font-family: 'Nunito', sans-serif;
+    color: var(--tinte);
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ---------- HEADER / PROGRESS ---------- */
+  .progress-wrap {
+    padding: 16px 18px 14px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--tinte);
+  }
+
+  .progress-meta .count {
+    opacity: 0.6;
+  }
+
+  .progress-meta .richtig-count {
+    color: var(--gruen-dunkel);
+    font-size: 15px;
+  }
+
+  .progress-track {
+    position: relative;
+    width: 100%;
+    height: 22px;
+    background: var(--weiss);
+    border: 3px solid var(--tinte);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gelb), var(--gruen));
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 999px;
+  }
+
+
+  /* ---------- GAME AREA ---------- */
+  .game {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 22px 30px;
+    position: relative;
+  }
+
+  .frage-label {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tinte);
+    opacity: 0.55;
+    margin-bottom: 14px;
+  }
+
+  /* Comic speech bubble */
+  .bubble-wrap {
+    position: relative;
+    margin-bottom: 36px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .bubble {
+    background: var(--weiss);
+    border: 4px solid var(--tinte);
+    border-radius: 28px;
+    padding: 38px 28px 44px;
+    min-width: 240px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 6px 6px 0 var(--tinte);
+    position: relative;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 22px solid var(--tinte);
+  }
+
+  .bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 17px solid var(--weiss);
+    z-index: 1;
+  }
+
+  .nomen-wort {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    color: var(--tinte);
+    line-height: 1.15;
+    word-break: break-word;
+  }
+
+  .bubble.shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-10px) rotate(-2deg); }
+    40% { transform: translateX(9px) rotate(2deg); }
+    60% { transform: translateX(-6px) rotate(-1deg); }
+    80% { transform: translateX(4px) rotate(1deg); }
+  }
+
+  .bubble.pop { animation: pop 0.35s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  /* Knall / Comic burst feedback */
+  .burst {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.4) rotate(-8deg);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 4px solid var(--tinte);
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5;
+  }
+
+  .burst.show-correct {
+    background: var(--gelb);
+    color: var(--tinte);
+    animation: burstIn 0.6s ease forwards;
+  }
+  .burst.show-wrong {
+    background: var(--weiss);
+    color: var(--rot-dunkel);
+    animation: burstIn 0.6s ease forwards;
+  }
+
+  @keyframes burstIn {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-10deg); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.15) rotate(4deg); }
+    75% { transform: translateX(-50%) scale(0.95) rotate(-2deg); }
+    100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
+  }
+
+  /* ---------- ANSWER BUTTONS ---------- */
+  .antworten {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .artikel-btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--weiss);
+    border: none;
+    border-radius: 18px;
+    padding: 20px 6px 16px;
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .artikel-btn .label-genus {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .artikel-btn.feminin {
+    background: var(--rot);
+    box-shadow: 0 5px 0 var(--rot-dunkel), 0 6px 10px var(--schatten);
+  }
+  .artikel-btn.maskulin {
+    background: var(--blau);
+    box-shadow: 0 5px 0 var(--blau-dunkel), 0 6px 10px var(--schatten);
+  }
+  .artikel-btn.neutral {
+    background: var(--gruen);
+    box-shadow: 0 5px 0 var(--gruen-dunkel), 0 6px 10px var(--schatten);
+  }
+
+  .artikel-btn:active {
+    transform: translateY(4px);
+  }
+  .artikel-btn.feminin:active { box-shadow: 0 1px 0 var(--rot-dunkel); }
+  .artikel-btn.maskulin:active { box-shadow: 0 1px 0 var(--blau-dunkel); }
+  .artikel-btn.neutral:active { box-shadow: 0 1px 0 var(--gruen-dunkel); }
+
+  .artikel-btn.richtig {
+    animation: rightPulse 0.5s ease;
+  }
+  .artikel-btn.falsch {
+    animation: wrongPulse 0.5s ease;
+    filter: grayscale(0.3) brightness(0.85);
+  }
+  .artikel-btn.disabled { pointer-events: none; opacity: 0.55; }
+  .artikel-btn.disabled.richtig { opacity: 1; }
+
+  @keyframes rightPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  @keyframes wrongPulse {
+    0%, 100% { transform: translateY(4px) translateX(0); }
+    30% { transform: translateY(4px) translateX(-6px); }
+    60% { transform: translateY(4px) translateX(6px); }
+  }
+
+  /* ---------- START / END SCREENS ---------- */
+  .screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 28px;
+    gap: 22px;
+  }
+
+  .screen h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 36px;
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .titel-artikel {
+    display: inline-block;
+  }
+  .titel-artikel.r { color: var(--rot); }
+  .titel-artikel.b { color: var(--blau); }
+  .titel-artikel.g { color: var(--gruen); }
+
+  .screen p.sub {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--tinte);
+    opacity: 0.7;
+    margin: 0;
+    max-width: 320px;
+  }
+
+  .legende {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .legende-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--weiss);
+    border: 3px solid var(--tinte);
+    border-radius: 999px;
+    padding: 7px 14px 7px 8px;
+    font-weight: 800;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 14px;
+    box-shadow: 3px 3px 0 var(--tinte);
+  }
+
+  .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--tinte); flex-shrink: 0; }
+  .dot.r { background: var(--rot); }
+  .dot.b { background: var(--blau); }
+  .dot.g { background: var(--gruen); }
+
+  .start-btn, .restart-btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--tinte);
+    background: var(--gelb);
+    border: 4px solid var(--tinte);
+    border-radius: 18px;
+    padding: 16px 38px;
+    cursor: pointer;
+    box-shadow: 5px 5px 0 var(--tinte);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .start-btn:active, .restart-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--tinte);
+  }
+
+  .ergebnis-zahl {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1;
+  }
+
+  .ergebnis-zahl span { font-size: 28px; opacity: 0.6; }
+
+  .fehler-liste {
+    width: 100%;
+    max-width: 360px;
+    text-align: left;
+    background: var(--weiss);
+    border: 3px solid var(--tinte);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 4px 4px 0 var(--tinte);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .fehler-liste h3 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 15px;
+    margin: 0 0 8px;
+  }
+
+  .fehler-zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(26,26,46,0.1);
+  }
+  .fehler-zeile:last-child { border-bottom: none; }
+
+  .hidden { display: none !important; }
+
+  #game-screen, #end-screen {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  #game-screen.game-screen-hidden,
+  #end-screen.game-screen-hidden {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- START SCREEN -->
+  <div class="screen" id="start-screen">
+    <h1><span class="titel-artikel r">die</span> <span class="titel-artikel b">der</span> <span class="titel-artikel g">das</span><br>Artikel-Quiz</h1>
+    <p class="sub">Tippe schnell den richtigen Artikel. Wie viele schaffst du in Folge?</p>
+    <div class="legende">
+      <div class="legende-item"><span class="dot r"></span>die – feminin</div>
+      <div class="legende-item"><span class="dot b"></span>der – maskulin</div>
+      <div class="legende-item"><span class="dot g"></span>das – neutral</div>
+    </div>
+    <button class="start-btn" id="start-btn">Los geht's!</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="game-screen-hidden">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="count"><span id="frage-nr">1</span> / <span id="frage-total">38</span></span>
+        <span class="richtig-count">⭐ <span id="score-display">0</span> richtig</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="game">
+      <div class="frage-label">Welcher Artikel?</div>
+      <div class="bubble-wrap">
+        <div class="bubble" id="bubble">
+          <div class="burst" id="burst"></div>
+          <div class="nomen-wort" id="nomen-wort">Wort</div>
+        </div>
+      </div>
+
+      <div class="antworten">
+        <button class="artikel-btn feminin" data-artikel="die">
+          die
+          <span class="label-genus">feminin</span>
+        </button>
+        <button class="artikel-btn maskulin" data-artikel="der">
+          der
+          <span class="label-genus">maskulin</span>
+        </button>
+        <button class="artikel-btn neutral" data-artikel="das">
+          das
+          <span class="label-genus">neutral</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="game-screen-hidden">
+    <div class="screen">
+      <h1 id="end-title">Geschafft!</h1>
+      <div class="ergebnis-zahl"><span id="final-score">0</span><span> / <span id="final-total">38</span></span></div>
+      <p class="sub" id="end-sub">Richtig beantwortet.</p>
+      <div class="fehler-liste hidden" id="fehler-liste">
+        <h3>Nochmal anschauen:</h3>
+        <div id="fehler-inhalt"></div>
+      </div>
+      <button class="restart-btn" id="restart-btn">Nochmal spielen</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // ---------- WORTSCHATZ ----------
+  // Quelle: Vokabelliste der Lehrkraft (Treffpunkt A1).
+  // Korrigierte Schreibweisen: "Ingenieur" (statt "Ingernieur"),
+  // "E-Mail-Adresse" (statt "E-Mail-Adrersse").
+  // Auf Wunsch der Lehrkraft geändert: "Kellner" -> "Kellnerin",
+  // "Taxifahrer" -> "Taxifahrerin", "Lehrer" -> "Lehrerin"
+  // (Vermeidung der "die"-Mehrdeutigkeit Singular feminin vs. Plural bei
+  // maskulinen Nomen auf -er, deren Pluralform mit dem Singular identisch
+  // ist). Arzt/Polizist/Ingenieur bleiben bewusst in maskuliner Form, da
+  // ihr Plural sich vom Singular unterscheidet (Ärzte/Polizisten/Ingenieure)
+  // und dies eine separate didaktische Entscheidung der Lehrkraft war.
+  const woerter = [
+    { wort: "Sprache", artikel: "die" },
+    { wort: "Name", artikel: "der" },
+    { wort: "Land", artikel: "das" },
+    { wort: "Altenpflegerin", artikel: "die" },
+    { wort: "Arzt", artikel: "der" },
+    { wort: "Friseurin", artikel: "die" },
+    { wort: "Ingenieur", artikel: "der" },
+    { wort: "Köchin", artikel: "die" },
+    { wort: "Lehrerin", artikel: "die" },
+    { wort: "Mechatronikerin", artikel: "die" },
+    { wort: "Polizist", artikel: "der" },
+    { wort: "Sängerin", artikel: "die" },
+    { wort: "Taxifahrerin", artikel: "die" },
+    { wort: "Verkäuferin", artikel: "die" },
+    { wort: "Beruf", artikel: "der" },
+    { wort: "Auto", artikel: "das" },
+    { wort: "Heimatland", artikel: "das" },
+    { wort: "Kurs", artikel: "der" },
+    { wort: "Busfahrerin", artikel: "die" },
+    { wort: "Kellnerin", artikel: "die" },
+    { wort: "Buch", artikel: "das" },
+    { wort: "Film", artikel: "der" },
+    { wort: "Lied", artikel: "das" },
+    { wort: "Sport", artikel: "der" },
+    { wort: "Tee", artikel: "der" },
+    { wort: "Problem", artikel: "das" },
+    { wort: "Hilfe", artikel: "die" },
+    { wort: "Formular", artikel: "das" },
+    { wort: "Vorname", artikel: "der" },
+    { wort: "Nachname", artikel: "der" },
+    { wort: "Adresse", artikel: "die" },
+    { wort: "Straße", artikel: "die" },
+    { wort: "Hausnummer", artikel: "die" },
+    { wort: "Ort", artikel: "der" },
+    { wort: "Postleitzahl", artikel: "die" },
+    { wort: "Telefonnummer", artikel: "die" },
+    { wort: "E-Mail-Adresse", artikel: "die" },
+    { wort: "E-Mail", artikel: "die" },
+    { wort: "Arbeit", artikel: "die" }
+  ];
+
+  // ---------- STATE ----------
+  let reihenfolge = [];
+  let index = 0;
+  let score = 0;
+  let streak = 0;
+  let bestStreak = 0;
+  let gesperrt = false;
+  let fehler = [];
+
+  // ---------- DOM ----------
+  const startScreen = document.getElementById('start-screen');
+  const gameScreen = document.getElementById('game-screen');
+  const endScreen = document.getElementById('end-screen');
+  const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const nomenWort = document.getElementById('nomen-wort');
+  const bubble = document.getElementById('bubble');
+  const burst = document.getElementById('burst');
+  const scoreDisplay = document.getElementById('score-display');
+  const frageNr = document.getElementById('frage-nr');
+  const frageTotal = document.getElementById('frage-total');
+  const progressFill = document.getElementById('progress-fill');
+  const antwortButtons = document.querySelectorAll('.artikel-btn');
+  const finalScore = document.getElementById('final-score');
+  const finalTotal = document.getElementById('final-total');
+  const endTitle = document.getElementById('end-title');
+  const endSub = document.getElementById('end-sub');
+  const fehlerListe = document.getElementById('fehler-liste');
+  const fehlerInhalt = document.getElementById('fehler-inhalt');
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startSpiel() {
+    reihenfolge = shuffle(woerter);
+    index = 0;
+    score = 0;
+    streak = 0;
+    bestStreak = 0;
+    fehler = [];
+    gesperrt = false;
+    scoreDisplay.textContent = '0';
+    frageTotal.textContent = reihenfolge.length;
+    startScreen.classList.add('hidden');
+    endScreen.classList.add('game-screen-hidden');
+    gameScreen.classList.remove('game-screen-hidden');
+    naechsteFrage();
+  }
+
+  function naechsteFrage() {
+    if (index >= reihenfolge.length) {
+      zeigeEnde();
+      return;
+    }
+    gesperrt = false;
+    burst.className = 'burst';
+    burst.textContent = '';
+    bubble.classList.remove('shake', 'pop');
+    antwortButtons.forEach(b => {
+      b.classList.remove('richtig', 'falsch', 'disabled');
+    });
+    const aktuell = reihenfolge[index];
+    nomenWort.textContent = aktuell.wort;
+    frageNr.textContent = index + 1;
+    const fortschritt = ((index + 1) / reihenfolge.length) * 100;
+    progressFill.style.width = fortschritt + '%';
+  }
+
+  function zeigeEnde() {
+    gameScreen.classList.add('game-screen-hidden');
+    endScreen.classList.remove('game-screen-hidden');
+    finalScore.textContent = score;
+    finalTotal.textContent = reihenfolge.length;
+    const quote = score / reihenfolge.length;
+    if (quote === 1) {
+      endTitle.textContent = 'Perfekt! 🎉';
+      endSub.textContent = 'Alle Artikel richtig. Stark!';
+    } else if (quote >= 0.8) {
+      endTitle.textContent = 'Sehr gut! 💪';
+      endSub.textContent = 'Fast alles richtig.';
+    } else if (quote >= 0.5) {
+      endTitle.textContent = 'Gut gemacht!';
+      endSub.textContent = 'Weiter so, du wirst besser.';
+    } else {
+      endTitle.textContent = 'Guter Versuch!';
+      endSub.textContent = 'Übung macht den Meister.';
+    }
+
+    if (fehler.length > 0) {
+      fehlerListe.classList.remove('hidden');
+      fehlerInhalt.innerHTML = fehler.map(f =>
+        `<div class="fehler-zeile"><span>${f.wort}</span><span>${f.artikel} ${f.wort}</span></div>`
+      ).join('');
+    } else {
+      fehlerListe.classList.add('hidden');
+      fehlerInhalt.innerHTML = '';
+    }
+  }
+
+  function antworten(gewaehlt, btnEl) {
+    if (gesperrt) return;
+    gesperrt = true;
+    const aktuell = reihenfolge[index];
+    const korrekt = gewaehlt === aktuell.artikel;
+
+    antwortButtons.forEach(b => b.classList.add('disabled'));
+
+    if (korrekt) {
+      score++;
+      streak++;
+      bestStreak = Math.max(bestStreak, streak);
+      scoreDisplay.textContent = score;
+      btnEl.classList.add('richtig');
+      bubble.classList.add('pop');
+      const ausrufe = ['Genau!', 'Stark!', 'Yes!', 'Richtig!', 'Top!'];
+      burst.textContent = ausrufe[Math.floor(Math.random() * ausrufe.length)];
+      burst.className = 'burst show-correct';
+    } else {
+      streak = 0;
+      fehler.push(aktuell);
+      btnEl.classList.add('falsch');
+      const richtigerBtn = document.querySelector('.artikel-btn[data-artikel="' + aktuell.artikel + '"]');
+      if (richtigerBtn) richtigerBtn.classList.add('richtig');
+      bubble.classList.add('shake');
+      burst.textContent = aktuell.artikel + ' ' + aktuell.wort;
+      burst.className = 'burst show-wrong';
+    }
+
+    setTimeout(() => {
+      index++;
+      naechsteFrage();
+    }, 1100);
+  }
+
+  antwortButtons.forEach(btn => {
+    btn.addEventListener('click', () => antworten(btn.dataset.artikel, btn));
+  });
+
+  startBtn.addEventListener('click', startSpiel);
+  restartBtn.addEventListener('click', startSpiel);
+})();
+</script>
+</body>
+</html>
