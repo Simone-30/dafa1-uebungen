@@ -506,37 +506,19 @@
 <script>
 (function () {
   // ---------- WORTSCHATZ ----------
-  // Quelle: Vokabelliste der Lehrkraft (Treffpunkt A1).
-  // Korrigierte Schreibweisen: "Ingenieur" (statt "Ingernieur"),
-  // "E-Mail-Adresse" (statt "E-Mail-Adrersse").
-  // Auf Wunsch der Lehrkraft geändert: "Kellner" -> "Kellnerin",
-  // "Taxifahrer" -> "Taxifahrerin", "Lehrer" -> "Lehrerin"
-  // (Vermeidung der "die"-Mehrdeutigkeit Singular feminin vs. Plural bei
-  // maskulinen Nomen auf -er, deren Pluralform mit dem Singular identisch
-  // ist). Arzt/Polizist/Ingenieur bleiben bewusst in maskuliner Form, da
-  // ihr Plural sich vom Singular unterscheidet (Ärzte/Polizisten/Ingenieure)
-  // und dies eine separate didaktische Entscheidung der Lehrkraft war.
+  // Basis: Vokabelliste der Lehrkraft (Treffpunkt A1).
+  // Berufsbezeichnungen wurden auf Wunsch der Lehrkraft entfernt.
+  // Ergänzt um Substantive aus den Wortkästen Lektion 3, Abschnitt A
+  // ("Ich lerne hier Deutsch") und Abschnitt B
+  // ("Ich finde, das Regal ist schön") laut Lehrbuch-Fotos.
   const woerter = [
     { wort: "Sprache", artikel: "die" },
     { wort: "Name", artikel: "der" },
     { wort: "Land", artikel: "das" },
-    { wort: "Altenpflegerin", artikel: "die" },
-    { wort: "Arzt", artikel: "der" },
-    { wort: "Friseurin", artikel: "die" },
-    { wort: "Ingenieur", artikel: "der" },
-    { wort: "Köchin", artikel: "die" },
-    { wort: "Lehrerin", artikel: "die" },
-    { wort: "Mechatronikerin", artikel: "die" },
-    { wort: "Polizist", artikel: "der" },
-    { wort: "Sängerin", artikel: "die" },
-    { wort: "Taxifahrerin", artikel: "die" },
-    { wort: "Verkäuferin", artikel: "die" },
     { wort: "Beruf", artikel: "der" },
     { wort: "Auto", artikel: "das" },
     { wort: "Heimatland", artikel: "das" },
     { wort: "Kurs", artikel: "der" },
-    { wort: "Busfahrerin", artikel: "die" },
-    { wort: "Kellnerin", artikel: "die" },
     { wort: "Buch", artikel: "das" },
     { wort: "Film", artikel: "der" },
     { wort: "Lied", artikel: "das" },
@@ -555,7 +537,40 @@
     { wort: "Telefonnummer", artikel: "die" },
     { wort: "E-Mail-Adresse", artikel: "die" },
     { wort: "E-Mail", artikel: "die" },
-    { wort: "Arbeit", artikel: "die" }
+    { wort: "Arbeit", artikel: "die" },
+
+    // Ergänzt aus Lehrbuch-Foto Lektion 3, Abschnitt B
+    // ("Ich finde, das Regal ist schön") – grauer Wortkasten
+    { wort: "Computer", artikel: "der" },
+    { wort: "Kaffeemaschine", artikel: "die" },
+    { wort: "Kasse", artikel: "die" },
+    { wort: "Laptop", artikel: "der" },
+    { wort: "Kiosk", artikel: "der" },
+    { wort: "Tür", artikel: "die" },
+    { wort: "Schlüssel", artikel: "der" },
+    { wort: "Fenster", artikel: "das" },
+    { wort: "Kühlschrank", artikel: "der" },
+    { wort: "Tafel", artikel: "die" },
+
+    // Ergänzt aus Lehrbuch-Foto Lektion 3, Abschnitt A
+    // ("Ich lerne hier Deutsch") – grauer Wortkasten
+    { wort: "Tasche", artikel: "die" },
+    { wort: "Tisch", artikel: "der" },
+    { wort: "Stuhl", artikel: "der" },
+    { wort: "Bank", artikel: "die" },
+    { wort: "Sofa", artikel: "das" },
+    { wort: "Bett", artikel: "das" },
+    { wort: "Regal", artikel: "das" },
+    { wort: "Schrank", artikel: "der" },
+    { wort: "Herd", artikel: "der" },
+    { wort: "Bleistift", artikel: "der" },
+    { wort: "Heft", artikel: "das" },
+    { wort: "Plakat", artikel: "das" },
+    { wort: "Handy", artikel: "das" },
+    { wort: "Dialog", artikel: "der" },
+    { wort: "Hausaufgabe", artikel: "die" },
+    { wort: "Kind", artikel: "das" },
+    { wort: "Foto", artikel: "das" }
   ];
 
   // ---------- STATE ----------
