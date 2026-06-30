@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Zahlen-Quiz · Treffpunkt A1</title>
+<style>
+  :root{
+    --pink:#ff3d7f;
+    --blue:#2d6cdf;
+    --yellow:#ffc83d;
+    --green:#2ecc71;
+    --dark:#1c1c2e;
+    --bg1:#6c3df4;
+    --bg2:#ff3d7f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px;
+    color:var(--dark);
+  }
+  .card{
+    background:#fff;
+    border-radius:24px;
+    padding:24px 20px;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 12px 0 rgba(0,0,0,0.2);
+    position:relative;
+  }
+  h1{
+    text-align:center;
+    color:#fff;
+    font-size:1.6rem;
+    text-shadow:2px 2px 0 var(--dark);
+    margin:8px 0 20px 0;
+    letter-spacing:1px;
+  }
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+    font-weight:800;
+  }
+  .badge{
+    background:var(--yellow);
+    border-radius:14px;
+    padding:6px 14px;
+    font-size:0.95rem;
+    box-shadow:0 3px 0 #c79100;
+  }
+  .mode-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .mode-btn{
+    flex:1;
+    border:none;
+    border-radius:14px;
+    padding:10px 6px;
+    font-weight:800;
+    font-size:0.85rem;
+    cursor:pointer;
+    background:#eee;
+    color:#888;
+    transition:transform .1s;
+  }
+  .mode-btn.active{
+    background:var(--blue);
+    color:#fff;
+    box-shadow:0 4px 0 #1d49a8;
+    transform:translateY(-2px);
+  }
+  .speech-bubble{
+    background:var(--bg1);
+    color:#fff;
+    border-radius:20px;
+    padding:24px 16px;
+    text-align:center;
+    position:relative;
+    margin-bottom:8px;
+    min-height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .speech-bubble:after{
+    content:"";
+    position:absolute;
+    bottom:-14px;
+    left:50%;
+    transform:translateX(-50%);
+    border-width:14px 12px 0 12px;
+    border-style:solid;
+    border-color:var(--bg1) transparent transparent transparent;
+  }
+  .prompt-number{
+    font-size:2.6rem;
+    font-weight:900;
+    letter-spacing:1px;
+  }
+  .prompt-word{
+    font-size:1.5rem;
+    font-weight:800;
+    text-transform:lowercase;
+  }
+  .answer-zone{
+    margin-top:26px;
+  }
+  input[type="text"], input[type="number"]{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    border:3px solid var(--dark);
+    font-size:1.2rem;
+    font-weight:700;
+    text-align:center;
+    outline:none;
+  }
+  input:focus{
+    border-color:var(--blue);
+  }
+  .btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  button.action{
+    flex:1;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-weight:900;
+    font-size:1rem;
+    cursor:pointer;
+    color:#fff;
+    background:var(--pink);
+    box-shadow:0 5px 0 #b8104f;
+    transition:transform .08s;
+  }
+  button.action:active{
+    transform:translateY(4px);
+    box-shadow:0 1px 0 #b8104f;
+  }
+  button.secondary{
+    background:#ccc;
+    color:var(--dark);
+    box-shadow:0 5px 0 #999;
+  }
+  .feedback{
+    margin-top:16px;
+    text-align:center;
+    font-weight:800;
+    font-size:1.05rem;
+    min-height:50px;
+    border-radius:14px;
+    padding:10px;
+  }
+  .feedback.correct{
+    background:#d6f9e3;
+    color:#1a8c4a;
+  }
+  .feedback.wrong{
+    background:#ffe1e8;
+    color:#c4154a;
+  }
+  .feedback .accepted{
+    display:block;
+    font-weight:600;
+    font-size:0.85rem;
+    margin-top:4px;
+    color:#555;
+  }
+  .progress-dots{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .dot{
+    width:12px;height:12px;border-radius:50%;
+    background:#ddd;
+  }
+  .dot.ok{background:var(--green);}
+  .dot.bad{background:var(--pink);}
+  .end-screen{text-align:center;}
+  .end-screen .score{
+    font-size:2.4rem;
+    font-weight:900;
+    color:var(--blue);
+  }
+  footer{
+    color:#fff;
+    opacity:0.8;
+    font-size:0.8rem;
+    margin-top:18px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<h1>🔢 Zahlen-Quiz</h1>
+
+<div class="card">
+  <div class="topbar">
+    <span>Runde <span id="roundNum">1</span>/<span id="roundTotal">10</span></span>
+    <span class="badge">⭐ <span id="score">0</span></span>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="mixed">🔀 Gemischt</button>
+    <button class="mode-btn" data-mode="numToWord">123 → Wort</button>
+    <button class="mode-btn" data-mode="wordToNum">Wort → 123</button>
+  </div>
+
+  <div id="quizArea">
+    <div class="speech-bubble">
+      <span id="promptText" class="prompt-number">123</span>
+    </div>
+
+    <div class="answer-zone">
+      <input type="text" id="answerInput" autocomplete="off" autocapitalize="off" inputmode="text" placeholder="Antwort eingeben...">
+      <div class="btn-row">
+        <button class="action" id="checkBtn">Prüfen ✔</button>
+        <button class="action secondary" id="nextBtn" style="display:none;">Weiter ➜</button>
+      </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="progress-dots" id="dots"></div>
+  </div>
+
+  <div id="endScreen" class="end-screen" style="display:none;">
+    <p style="font-size:1.1rem;font-weight:700;">Geschafft! 🎉</p>
+    <div class="score"><span id="finalScore">0</span>/<span id="finalTotal">10</span></div>
+    <div class="btn-row">
+      <button class="action" id="restartBtn">Nochmal spielen 🔁</button>
+    </div>
+  </div>
+</div>
+
+<footer>Treffpunkt A1 · Lektion 3 · Zahlen 21–999</footer>
+
+<script>
+// ---------- Zahlwort-Generator (21-999) ----------
+const einer = ["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun",
+  "zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
+const einerKompositum = ["","ein","zwei","drei","vier","fünf","sechs","sieben","acht","neun"]; // für x-und-y / x-hundert
+const zehner = {2:"zwanzig",3:"dreißig",4:"vierzig",5:"fünfzig",6:"sechzig",7:"siebzig",8:"achtzig",9:"neunzig"};
+
+function zweistelligZuWort(n){
+  if(n < 20) return einer[n];
+  const z = Math.floor(n/10), e = n%10;
+  if(e === 0) return zehner[z];
+  return einerKompositum[e] + "und" + zehner[z];
+}
+
+// Liefert ein Array möglicher korrekter Schreibweisen (z.B. "hundert..." und "einhundert...")
+function zahlZuWortVarianten(n){
+  if(n < 20) return [einer[n]];
+  if(n < 100) return [zweistelligZuWort(n)];
+  const h = Math.floor(n/100), rest = n % 100;
+  const restWort = rest === 0 ? "" : zweistelligZuWort(rest);
+  const varianten = [];
+  if(h === 1){
+    varianten.push("hundert" + restWort);
+    varianten.push("einhundert" + restWort);
+  } else {
+    varianten.push(einerKompositum[h] + "hundert" + restWort);
+  }
+  return varianten;
+}
+
+function normalisiere(str){
+  return str.toLowerCase()
+    .replace(/ß/g,"ss")
+    .replace(/[^a-z]/g,""); // entfernt Leerzeichen, Bindestriche, Satzzeichen
+}
+
+function zufallsZahl(){
+  return Math.floor(Math.random()*(999-21+1))+21;
+}
+
+// ---------- Quiz-Logik ----------
+const ROUNDS = 20;
+let mode = "mixed";
+let round = 0, score = 0;
+let currentAnswerType = "numToWord"; // pro Runde bestimmt
+let currentNumber = 0;
+let results = []; // 'ok' / 'bad'
+
+const promptText = document.getElementById("promptText");
+const answerInput = document.getElementById("answerInput");
+const feedback = document.getElementById("feedback");
+const checkBtn = document.getElementById("checkBtn");
+const nextBtn = document.getElementById("nextBtn");
+const dotsEl = document.getElementById("dots");
+const roundNumEl = document.getElementById("roundNum");
+const roundTotalEl = document.getElementById("roundTotal");
+const scoreEl = document.getElementById("score");
+const quizArea = document.getElementById("quizArea");
+const endScreen = document.getElementById("endScreen");
+
+roundTotalEl.textContent = ROUNDS;
+
+document.querySelectorAll(".mode-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    mode = btn.dataset.mode;
+    startGame();
+  });
+});
+
+function pickAnswerType(){
+  if(mode === "numToWord") return "numToWord";
+  if(mode === "wordToNum") return "wordToNum";
+  return Math.random() < 0.5 ? "numToWord" : "wordToNum";
+}
+
+function newRound(){
+  currentNumber = zufallsZahl();
+  currentAnswerType = pickAnswerType();
+  feedback.className = "feedback";
+  feedback.textContent = "";
+  answerInput.value = "";
+  answerInput.disabled = false;
+  checkBtn.style.display = "block";
+  nextBtn.style.display = "none";
+
+  if(currentAnswerType === "numToWord"){
+    promptText.className = "prompt-number";
+    promptText.textContent = currentNumber;
+    answerInput.placeholder = "...als Wort schreiben";
+    answerInput.inputMode = "text";
+  } else {
+    promptText.className = "prompt-word";
+    promptText.textContent = zahlZuWortVarianten(currentNumber)[0];
+    answerInput.placeholder = "...als Ziffer schreiben";
+    answerInput.inputMode = "numeric";
+  }
+  answerInput.focus();
+}
+
+function startGame(){
+  round = 0; score = 0; results = [];
+  scoreEl.textContent = score;
+  quizArea.style.display = "block";
+  endScreen.style.display = "none";
+  nextRoundOrEnd();
+}
+
+function nextRoundOrEnd(){
+  if(round >= ROUNDS){
+    showEnd();
+    return;
+  }
+  round++;
+  roundNumEl.textContent = round;
+  newRound();
+  renderDots();
+}
+
+function renderDots(){
+  dotsEl.innerHTML = "";
+  for(let i=0;i<ROUNDS;i++){
+    const d = document.createElement("div");
+    d.className = "dot";
+    if(results[i] === "ok") d.classList.add("ok");
+    if(results[i] === "bad") d.classList.add("bad");
+    dotsEl.appendChild(d);
+  }
+}
+
+function checkAnswer(){
+  const userVal = answerInput.value.trim();
+  if(userVal === "") return;
+  let correct = false;
+  let acceptedDisplay = "";
+
+  if(currentAnswerType === "numToWord"){
+    const varianten = zahlZuWortVarianten(currentNumber);
+    const normUser = normalisiere(userVal);
+    correct = varianten.some(v => normalisiere(v) === normUser);
+    acceptedDisplay = varianten.join(" / ");
+  } else {
+    correct = parseInt(userVal,10) === currentNumber;
+    acceptedDisplay = String(currentNumber);
+  }
+
+  results[round-1] = correct ? "ok" : "bad";
+  if(correct) score++;
+  scoreEl.textContent = score;
+
+  feedback.className = "feedback " + (correct ? "correct" : "wrong");
+  feedback.innerHTML = correct
+    ? "Richtig! 🎉"
+    : "Leider falsch. Richtig wäre: <b>" + acceptedDisplay + "</b>";
+
+  answerInput.disabled = true;
+  checkBtn.style.display = "none";
+  nextBtn.style.display = "block";
+  renderDots();
+}
+
+function showEnd(){
+  quizArea.style.display = "none";
+  endScreen.style.display = "block";
+  document.getElementById("finalScore").textContent = score;
+  document.getElementById("finalTotal").textContent = ROUNDS;
+}
+
+checkBtn.addEventListener("click", checkAnswer);
+answerInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){
+    if(nextBtn.style.display === "block"){
+      nextRoundOrEnd();
+    } else {
+      checkAnswer();
+    }
+  }
+});
+nextBtn.addEventListener("click", nextRoundOrEnd);
+document.getElementById("restartBtn").addEventListener("click", startGame);
+
+startGame();
+</script>
+</body>
+</html>
